@@ -55,6 +55,15 @@ async function addTask(name) {
     fetchTasks();
 }
 
+async function markTaskDone(name) {
+    await fetch('/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, last_done: new Date().toISOString().split('T')[0] })
+    });
+    fetchTasks();
+}
+
 async function deleteTask(name) {
     await fetch('/tasks', {
         method: 'DELETE',
