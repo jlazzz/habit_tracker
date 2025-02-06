@@ -140,5 +140,24 @@ async function deleteTask(name) {
     fetchTasks();
 }
 
+function renderTasks(tasks) {
+    const taskList = document.getElementById('days-since-list');
+    taskList.innerHTML = '';
+
+    tasks.forEach(task => {
+        const daysAgo = task.last_done
+            ? Math.floor((Date.now() - new Date(task.last_done)) / (1000 * 60 * 60 * 24))
+            : 'Never';
+
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-gray-100 px-4 py-2 rounded-md';
+        li.innerHTML = `
+            <span>${task.name}: ${daysAgo} days ago</span>
+            <button onclick="markTaskDone('${task.name}')" class="bg-gray-500 text-white px-2 py-1 rounded-md">Did It Today</button>
+            <button onclick="deleteTask('${task.name}')" class="text-red-500 ml-4">Delete</button>
+        `;
+        taskList.appendChild(li);
+    });
+}
 fetchHabits();
 
