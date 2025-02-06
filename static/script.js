@@ -26,6 +26,17 @@ async function addHabit(name) {
     }
 }
 
+async function toggleHabit(name, date) {
+    const response = await fetch('/habits/history', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, date: date })
+    });
+    if (response.ok) {
+        fetchHabits();
+    }
+}
+
 async function deleteHabit(name) {
     await fetch('/habits', {
         method: 'DELETE',
