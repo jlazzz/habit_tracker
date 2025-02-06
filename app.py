@@ -1,4 +1,8 @@
+from flask import Flask, request, jsonify, render_template
 import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
 
 # Initialize the database
 def init_db():
@@ -28,4 +32,8 @@ def init_db():
         )
         """)
         conn.commit()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
