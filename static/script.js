@@ -37,6 +37,67 @@ async function toggleHabit(name, date) {
     }
 }
 
+function renderHabits(habits) {
+    const habitList = document.getElementById('habit-list');
+    habitList.innerHTML = '';
+
+    habits.forEach(habit => {
+        const li = document.createElement('li');
+        li.className = 'flex flex-col bg-gray-100 px-4 py-2 rounded-md mb-2';
+
+        const habitName = document.createElement('span');
+        habitName.textContent = habit.name;
+
+        const containerDiv = document.createElement('div');
+        containerDiv.className = 'flex flex-col items-center';
+
+        const dayLabels = document.createElement('div');
+        dayLabels.className = 'flex justify-between w-full';
+
+        const historyDiv = document.createElement('div');
+        historyDiv.className = 'flex justify-between w-full mt-1';
+
+        const today = new Date();
+
+        for (let i = 0; i <= 13; i++) { // Reverse the loop order
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const dateString = date.toISOString().split('T')[0];
+            const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+
+            const dayLabel = document.createElement('div');
+            dayLabel.textContent = dayOfWeek;
+            dayLabel.className = 'text-sm text-gray-600 text-center w-6';
+            dayLabels.appendChild(dayLabel);
+
+            const checkboxWrapper = document.createElement('div');
+            checkboxWrapper.className = 'w-6 flex justify-center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = habit.history && habit.history[dateString] === 1;
+            checkbox.addEventListener('change', () => toggleHabit(habit.name, dateString));
+
+            checkboxWrapper.appendChild(checkbox);
+            historyDiv.appendChild(checkboxWrapper);
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'text-red-500 mt-2';
+        deleteBtn.onclick = () => deleteHabit(habit.name);
+
+        containerDiv.appendChild(dayLabels);
+        containerDiv.appendChild(historyDiv);
+
+        li.appendChild(habitName);
+        li.appendChild(containerDiv);
+        li.appendChild(deleteBtn);
+
+        habitList.appendChild(li);
+    });
+}
+
 async function deleteHabit(name) {
     await fetch('/habits', {
         method: 'DELETE',
