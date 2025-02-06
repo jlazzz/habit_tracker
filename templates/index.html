@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit and Task Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shadcn-ui/dist/index.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+    <header class="w-full max-w-3xl bg-white shadow-md rounded-md p-4 text-center">
+        <h1 class="text-2xl font-bold">Habit and Task Tracker</h1>
+        <p id="current-date" class="text-gray-500 mt-2"></p>
+    </header>
+
+    <main class="w-full max-w-3xl mt-6">
+        <!-- Habit Tracker -->
+        <section class="bg-white shadow-md rounded-md p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Daily Habits</h2>
+            <ul id="habit-list" class="mb-4 space-y-2"></ul>
+            <form id="habit-form" class="flex space-x-2">
+                <input type="text" id="habit-input" class="flex-1 px-2 py-1 border rounded-md" placeholder="Add a new habit" required>
+                <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Add Habit</button>
+            </form>
+        </section>
+
+        <!-- Days Since Last Tracker -->
+        <section class="bg-white shadow-md rounded-md p-4">
+            <h2 class="text-xl font-semibold mb-4">Days Since</h2>
+            <ul id="days-since-list" class="mb-4 space-y-2"></ul>
+            <form id="days-since-form" class="flex flex-wrap space-x-2">
+                <input type="text" id="days-since-input" class="flex-1 px-2 py-1 border rounded-md" placeholder="Add a new task" required>
+                <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Add Task</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Link the external JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
