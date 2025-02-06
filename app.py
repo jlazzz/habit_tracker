@@ -37,6 +37,39 @@ def init_db():
 def index():
     return render_template('index.html')
 
+@app.route('/tasks', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def manage_tasks():
+    with sqlite3.connect("data.db") as conn:
+        c = conn.cursor()
+        if request.method == 'GET':
+            c.execute("SELECT name, last_done FROM tasks")
+            tasks = [{"name": row[0], "last_done": row[1]} for row in c.fetchall()]
+            return jsonify(tasks)
+
+        elif request.method == 'POST':
+            data = request.json
+            if not data.get('name'):
+                return jsonify({"error": "Task name is required"}), 400
+
+            try:
+                c.execute("INSERT INTO tasks (name, last_done) VALUES (?, ?)", (data['name'], None))
+                conn.commit()
+                return jsonify({"status": "success"}), 201
+            except sqlite3.IntegrityError:
+                return jsonify({"error": "Task already exists"}), 409
+
+        elif request.method == 'PUT':
+            data = request.json
+            c.execute("UPDATE tasks SET last_done = ? WHERE name = ?", (data['last_done'], data['name']))
+            conn.commit()
+            return jsonify({"status": "updated"}), 200
+
+        elif request.method == 'DELETE':
+            data = request.json
+            c.execute("DELETE FROM tasks WHERE name = ?", (data['name'],))
+            conn.commit()
+            return jsonify({"status": "deleted"}), 200
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000)
