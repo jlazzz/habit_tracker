@@ -6,6 +6,12 @@ function displayCurrentDate() {
 
 document.body.style.backgroundColor = "#A98F6D";
 
+async function fetchHabits() {
+    const response = await fetch('/habits');
+    const habits = await response.json();
+    renderHabits(habits);
+}
+
 async function addHabit(name) {
     console.log('Adding habit:', name);
     try {
@@ -133,4 +139,6 @@ async function deleteTask(name) {
     });
     fetchTasks();
 }
+
+fetchHabits();
 
