@@ -184,6 +184,8 @@ document.getElementById('days-since-form').addEventListener('submit', (e) => {
     }
 });
 
+// Initial load
+displayCurrentDate();
 fetchHabits();
 fetchTasks();
 
