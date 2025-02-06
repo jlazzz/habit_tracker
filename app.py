@@ -37,6 +37,44 @@ def init_db():
 def index():
     return render_template('index.html')
 
+@app.route('/habits', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def manage_habits():
+    with sqlite3.connect("data.db") as conn:
+        c = conn.cursor()
+        if request.method == 'GET':
+            c.execute("SELECT name FROM habits")
+            habits = []
+            for row in c.fetchall():
+                habit_name = row[0]
+                c.execute("SELECT date, status FROM habit_history WHERE habit_name = ?", (habit_name,))
+                history = {date: status for date, status in c.fetchall()}
+                habits.append({"name": habit_name, "history": history})
+            return jsonify(habits)
+
+        elif request.method == 'POST':
+            data = request.json
+            if not data.get('name'):
+                return jsonify({"error": "Habit name is required"}), 400
+
+            try:
+                c.execute("INSERT INTO habits (name, history) VALUES (?, ?)", (data['name'], '0,0,0,0,0,0,0,0,0,0,0,0,0,0'))
+                conn.commit()
+                return jsonify({"status": "success"}), 201
+            except sqlite3.IntegrityError:
+                return jsonify({"error": "Habit already exists"}), 409
+
+        elif request.method == 'PUT':
+            data = request.json
+            c.execute("UPDATE habits SET history = ? WHERE name = ?", (','.join(data['history']), data['name']))
+            conn.commit()
+            return jsonify({"status": "updated"}), 200
+
+        elif request.method == 'DELETE':
+            data = request.json
+            c.execute("DELETE FROM habits WHERE name = ?", (data['name'],))
+            conn.commit()
+            return jsonify({"status": "deleted"}), 200
+
 @app.route('/tasks', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def manage_tasks():
     with sqlite3.connect("data.db") as conn:
@@ -69,6 +107,24 @@ def manage_tasks():
             c.execute("DELETE FROM tasks WHERE name = ?", (data['name'],))
             conn.commit()
             return jsonify({"status": "deleted"}), 200
+
+@app.route('/habits', methods=['POST'])
+def add_habit():
+    data = request.json
+    print('Received data:', data)  # Debugging line
+    if not data.get('name'):
+        return jsonify({"error": "Habit name is required"}), 400
+
+    try:
+        with sqlite3.connect("data.db") as conn:
+            c = conn.cursor()
+            c.execute("INSERT INTO habits (name, history) VALUES (?, ?)", (data['name'], '0,0,0,0,0,0,0,0,0,0,0,0,0,0'))
+            conn.commit()
+        print('Habit added successfully')  # Debugging line
+        return jsonify({"status": "success"}), 201
+    except sqlite3.IntegrityError as e:
+        print('Database error:', e)  # Debugging line
+        return jsonify({"error": "Habit already exists"}), 409
 
 if __name__ == '__main__':
     init_db()
