@@ -126,6 +126,31 @@ def add_habit():
         print('Database error:', e)  # Debugging line
         return jsonify({"error": "Habit already exists"}), 409
 
+@app.route('/habits/history', methods=['PUT'])
+def update_habit_history():
+    data = request.json
+    habit_name = data['name']
+    date = data['date']
+
+    with sqlite3.connect("data.db") as conn:
+        c = conn.cursor()
+
+        # Toggle the current status
+        c.execute("SELECT status FROM habit_history WHERE habit_name = ? AND date = ?", (habit_name, date))
+        row = c.fetchone()
+        new_status = 0 if row and row[0] == 1 else 1
+
+        # Insert new or update existing record
+        c.execute("""
+            INSERT INTO habit_history (habit_name, date, status)
+            VALUES (?, ?, ?)
+            ON CONFLICT(habit_name, date) DO UPDATE SET status = excluded.status
+        """, (habit_name, date, new_status))
+        
+        conn.commit()
+
+    return jsonify({"status": "updated"})
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000)
