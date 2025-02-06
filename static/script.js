@@ -113,6 +113,12 @@ async function deleteHabit(name) {
     fetchHabits();
 }
 
+async function fetchTasks() {
+    const response = await fetch('/tasks');
+    const tasks = await response.json();
+    renderTasks(tasks);
+}
+
 async function addTask(name) {
     await fetch('/tasks', {
         method: 'POST',
@@ -160,4 +166,5 @@ function renderTasks(tasks) {
     });
 }
 fetchHabits();
+fetchTasks();
 
