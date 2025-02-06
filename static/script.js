@@ -165,6 +165,25 @@ function renderTasks(tasks) {
         taskList.appendChild(li);
     });
 }
+
+document.getElementById('habit-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const habitInput = document.getElementById('habit-input').value.trim();
+    if (habitInput) {
+        addHabit(habitInput);
+        document.getElementById('habit-input').value = '';
+    }
+});
+
+document.getElementById('days-since-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const taskInput = document.getElementById('days-since-input').value.trim();
+    if (taskInput) {
+        addTask(taskInput);
+        document.getElementById('days-since-input').value = '';
+    }
+});
+
 fetchHabits();
 fetchTasks();
 
