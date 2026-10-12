@@ -1,2 +1,9 @@
 venv/
 data.db
+backups/
+data/*
+!data/.gitkeep
+.env
+__pycache__/
+.pytest_cache/
+tests/e2e/shots/

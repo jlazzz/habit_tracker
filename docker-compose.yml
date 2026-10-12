@@ -1,0 +1,12 @@
+services:
+  habit_tracker:
+    build: .
+    container_name: habit_tracker
+    restart: unless-stopped
+    # Should match the owner of ./data on the host
+    user: "${HABIT_UID:-1000}:${HABIT_GID:-1000}"
+    ports:
+      # Set HABIT_BIND in .env to listen on one address only (e.g. 127.0.0.1)
+      - "${HABIT_BIND:-0.0.0.0}:5000:5000"
+    volumes:
+      - ./data:/data

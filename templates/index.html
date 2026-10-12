@@ -3,37 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit and Task Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shadcn-ui/dist/index.css">
+    <meta name="theme-color" content="#f4efe6">
+    <title>Habit Tracker</title>
+    <!-- Apply a saved light/dark choice before the page paints, so it doesn't flash the other one -->
+    <script>
+        try {
+            var savedTheme = JSON.parse(localStorage.getItem('habits.theme'));
+            if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+        } catch (error) {}
+    </script>
+    <!-- Everything is served locally so the page works when the internet is down -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
-    <header class="w-full max-w-3xl bg-white shadow-md rounded-md p-4 text-center">
-        <h1 class="text-2xl font-bold">Habit and Task Tracker</h1>
-        <p id="current-date" class="text-gray-500 mt-2"></p>
-    </header>
+<body>
+    <div class="page">
+        <header class="masthead">
+            <span>Habit Tracker</span>
+            <nav>
+                <a href="#/today" data-view="today">Today</a>
+                <a href="#/record" data-view="record">Record</a>
+                <button type="button" id="theme-toggle"></button>
+            </nav>
+        </header>
 
-    <main class="w-full max-w-3xl mt-6">
-        <!-- Habit Tracker -->
-        <section class="bg-white shadow-md rounded-md p-4 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Daily Habits</h2>
-            <ul id="habit-list" class="mb-4 space-y-2"></ul>
-            <form id="habit-form" class="flex space-x-2">
-                <input type="text" id="habit-input" class="flex-1 px-2 py-1 border rounded-md" placeholder="Add a new habit" required>
-                <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Add Habit</button>
-            </form>
-        </section>
+        <p id="error" role="alert" hidden></p>
 
-        <!-- Days Since Last Tracker -->
-        <section class="bg-white shadow-md rounded-md p-4">
-            <h2 class="text-xl font-semibold mb-4">Days Since</h2>
-            <ul id="days-since-list" class="mb-4 space-y-2"></ul>
-            <form id="days-since-form" class="flex flex-wrap space-x-2">
-                <input type="text" id="days-since-input" class="flex-1 px-2 py-1 border rounded-md" placeholder="Add a new task" required>
-                <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Add Task</button>
+        <!-- Today: tick off habits for one day -->
+        <main id="view-today">
+            <section class="headline">
+                <div>
+                    <p class="label" id="day-label">Today</p>
+                    <h1 id="day-title"></h1>
+                </div>
+                <div class="tally" id="tally" aria-live="polite"></div>
+            </section>
+            <div class="daynav">
+                <button type="button" class="text-button" id="day-prev">&larr; Previous day</button>
+                <button type="button" class="text-button" id="day-next">Next day &rarr;</button>
+                <span class="spacer"></span>
+                <button type="button" class="text-button" id="day-today" hidden>Return to today</button>
+                <button type="button" class="text-button edit-toggle" id="edit-habits" data-label="Edit habits" aria-pressed="false">Edit habits</button>
+            </div>
+            <div class="progress"><div id="progress-bar"></div></div>
+
+            <ol id="habit-list" class="rows"></ol>
+            <form id="habit-form" class="add">
+                <input type="text" id="habit-input" placeholder="A new habit&hellip;" aria-label="New habit" required>
+                <button type="submit" class="text-button">Add habit</button>
             </form>
-        </section>
-    </main>
+
+            <div class="section-head">
+                <h2 id="day-heading">The day</h2>
+                <span class="label" id="note-status" aria-live="polite"></span>
+            </div>
+            <div class="day-entry">
+                <div class="rating" id="rating" role="radiogroup" aria-label="How the day went"></div>
+                <textarea id="day-note" rows="2" maxlength="5000" placeholder="A few words about the day&hellip;" aria-label="Notes about the day"></textarea>
+            </div>
+
+            <div class="section-head">
+                <h2>Days since</h2>
+                <button type="button" class="text-button edit-toggle" id="edit-toggle" data-label="Edit tasks" aria-pressed="false">Edit tasks</button>
+            </div>
+            <ul id="task-list" class="rows"></ul>
+            <form id="task-form" class="add">
+                <input type="text" id="task-input" placeholder="Something to keep count of&hellip;" aria-label="New task" required>
+                <button type="submit" class="text-button">Add task</button>
+            </form>
+        </main>
+
+        <!-- Record: history and trends -->
+        <main id="view-record" hidden>
+            <section class="headline record-headline">
+                <div>
+                    <p class="label">Record</p>
+                    <h1 id="record-title"></h1>
+                </div>
+                <div class="periods" id="periods" role="group" aria-label="Time period">
+                    <button type="button" data-period="7">7D</button>
+                    <button type="button" data-period="30">30D</button>
+                    <button type="button" data-period="90">90D</button>
+                    <button type="button" data-period="365">1Y</button>
+                    <button type="button" data-period="all">All</button>
+                </div>
+            </section>
+            <p class="subtitle" id="record-range"></p>
+
+            <section class="figures" id="figures"></section>
+
+            <div class="section-head">
+                <h2>How the days went</h2>
+                <div class="legend" id="rating-legend"></div>
+            </div>
+            <div class="calendar" id="rating-calendar"></div>
+            <div id="notes"></div>
+
+            <div class="section-head">
+                <h2>Completion over time</h2>
+                <span class="label" id="chart-unit"></span>
+            </div>
+            <div class="chart" id="chart"></div>
+
+            <div class="section-head">
+                <h2>By weekday</h2>
+                <span class="label">Share of habits done</span>
+            </div>
+            <div class="weekdays" id="weekdays"></div>
+
+            <div class="section-head">
+                <h2>Habits</h2>
+                <div class="sorts" id="sorts" role="group" aria-label="Sort habits by">
+                    <button type="button" data-sort="rate">Rate</button>
+                    <button type="button" data-sort="change">Change</button>
+                    <button type="button" data-sort="streak">Streak</button>
+                    <button type="button" data-sort="best">Best</button>
+                    <button type="button" data-sort="name">Name</button>
+                </div>
+            </div>
+            <div id="entries"></div>
+
+            <div class="section-head">
+                <h2>Days since</h2>
+                <span class="label">Every time it was done</span>
+            </div>
+            <div id="logs"></div>
+        </main>
+    </div>
+
+    <div id="tip" role="tooltip" hidden></div>
 
     <!-- Link the external JavaScript -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>

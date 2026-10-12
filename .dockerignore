@@ -1,0 +1,8 @@
+.git
+venv/
+data/
+data.db
+backups/
+tests/
+demo.gif
+.env
